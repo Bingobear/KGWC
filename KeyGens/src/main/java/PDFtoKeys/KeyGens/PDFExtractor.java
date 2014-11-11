@@ -37,6 +37,25 @@ public class PDFExtractor {
 	 * 
 	 * @throws IOException
 	 */
+
+	private String language;
+
+	PDFExtractor() {
+
+	}
+
+	PDFExtractor(String lang) {
+		this.language = lang;
+	}
+
+	public void setLang(String lang) {
+		this.language = lang;
+	}
+
+	public String getLang() {
+		return this.language;
+	}
+
 	public String parsePdftoString() throws IOException {
 		PDFTextStripper pdfStripper = null;
 		PDDocument pdDoc = null;
@@ -100,7 +119,11 @@ public class PDFExtractor {
 		String[] tokens = null;
 		try {
 			// Loading tokenizer model
-			modelIn = getClass().getResourceAsStream("/en-token.bin");
+			if (this.getLang() == "en") {
+				modelIn = getClass().getResourceAsStream("/eng/en-token.bin");
+			} else {
+				modelIn = getClass().getResourceAsStream("/ger/de-token.bin");
+			}
 			final TokenizerModel tokenModel = new TokenizerModel(modelIn);
 			modelIn.close();
 
@@ -127,20 +150,24 @@ public class PDFExtractor {
 	 * 
 	 */
 
-	public void token() throws InvalidFormatException, IOException {
-
-		String[] sentences = {
-				"If President John F. Kennedy, after visiting France in 1961 with his immensely popular wife,"
-						+ " famously described himself as 'the man who had accompanied Jacqueline Kennedy to Paris,'"
-						+ " Mr. Hollande has been most conspicuous on this state visit for traveling alone.",
-				"Mr. Draghi spoke on the first day of an economic policy conference here organized by"
-						+ " the E.C.B. as a sort of counterpart to the annual symposium held in Jackson"
-						+ " Hole, Wyo., by the Federal Reserve Bank of Kansas City. " };
+	public void NameFinder(String[] sentences) throws InvalidFormatException, IOException {
+//TEST STUFF
+//		String[] sentences = {
+//				"If President John F. Kennedy, after visiting France in 1961 with his immensely popular wife,"
+//						+ " famously described himself as 'the man who had accompanied Jacqueline Kennedy to Paris,'"
+//						+ " Mr. Hollande has been most conspicuous on this state visit for traveling alone.",
+//				"Mr. Draghi spoke on the first day of an economic policy conference here organized by"
+//						+ " the E.C.B. as a sort of counterpart to the annual symposium held in Jackson"
+//						+ " Hole, Wyo., by the Federal Reserve Bank of Kansas City. " };
 
 		// Load the model file downloaded from OpenNLP
 		// http://opennlp.sourceforge.net/models-1.5/en-ner-person.bin
 		InputStream modelIn = null;
-		modelIn = getClass().getResourceAsStream("/en-ner-person.bin");
+		if (this.getLang() == "en") {
+			modelIn = getClass().getResourceAsStream("/eng/en-ner-person.bin");
+		} else {
+			modelIn = getClass().getResourceAsStream("/ger/de-ner-person.bin");
+		}
 		TokenNameFinderModel model = new TokenNameFinderModel(modelIn);
 
 		// Create a NameFinder using the model
@@ -169,7 +196,12 @@ public class PDFExtractor {
 		InputStream modelIn = null;
 		try {
 			// Loading sentence detection model
-			modelIn = getClass().getResourceAsStream("/en-sent.bin");
+			if (this.getLang() == "en") {
+				modelIn = getClass().getResourceAsStream("/eng/en-sent.bin");
+			} else {
+				modelIn = getClass().getResourceAsStream("/ger/de-sent.bin");
+			}
+
 			final SentenceModel sentenceModel = new SentenceModel(modelIn);
 			modelIn.close();
 
@@ -209,13 +241,20 @@ public class PDFExtractor {
 	}
 
 	private POSTaggerME createposttagger() {
-		Tokenizer _tokenizer = null;
+
 
 		InputStream modelIn = null;
 		POSTaggerME _posTagger = null;
 		try {
 			// Loading tokenizer model
-			modelIn = getClass().getResourceAsStream("/en-pos-maxent.bin");
+			if (this.getLang() == "en") {
+				modelIn = getClass().getResourceAsStream(
+						"/eng/en-pos-maxent.bin");
+			} else {
+				modelIn = getClass().getResourceAsStream(
+						"/ger/de-pos-maxent.bin");
+			}
+
 			final POSModel posModel = new POSModel(modelIn);
 			modelIn.close();
 
@@ -271,7 +310,7 @@ public class PDFExtractor {
 		keywords = (ArrayList<String>) keys.clone();
 		int arraySize = keywords.size();
 		ArrayList<Keyword> result = new ArrayList<Keyword>();
-		while(arraySize>0) {
+		while (arraySize > 0) {
 			int count = 0;
 			String current = keywords.get(0);
 			int index = 0;
@@ -282,9 +321,9 @@ public class PDFExtractor {
 					count++;
 					keywords.remove(index);
 					arraySize--;
-				} 
+				}
 			}
-			result.add(new Keyword(count,current));
+			result.add(new Keyword(count, current));
 		}
 		return result;
 	}
