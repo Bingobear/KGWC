@@ -20,7 +20,8 @@ public class App {
 
 	public static void main(String[] args) {
 		// BasicConfigurator.configure();
-
+		Text2Image gen = new Text2Image();
+		gen.generateImage("INEC");
 		try {
 			parsePDFtoKey();
 		} catch (LangDetectException e) {
