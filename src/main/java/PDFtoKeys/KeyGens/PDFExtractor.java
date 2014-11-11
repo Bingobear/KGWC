@@ -119,7 +119,7 @@ public class PDFExtractor {
 		String[] tokens = null;
 		try {
 			// Loading tokenizer model
-			if (this.getLang() == "en") {
+			if (this.getLang().equals("en")) {
 				modelIn = getClass().getResourceAsStream("/eng/en-token.bin");
 			} else {
 				modelIn = getClass().getResourceAsStream("/ger/de-token.bin");
@@ -163,7 +163,7 @@ public class PDFExtractor {
 		// Load the model file downloaded from OpenNLP
 		// http://opennlp.sourceforge.net/models-1.5/en-ner-person.bin
 		InputStream modelIn = null;
-		if (this.getLang() == "en") {
+		if (this.getLang().equals("en")) {
 			modelIn = getClass().getResourceAsStream("/eng/en-ner-person.bin");
 		} else {
 			modelIn = getClass().getResourceAsStream("/ger/de-ner-person.bin");
@@ -196,7 +196,7 @@ public class PDFExtractor {
 		InputStream modelIn = null;
 		try {
 			// Loading sentence detection model
-			if (this.getLang() == "en") {
+			if (this.getLang().equals("en")) {
 				modelIn = getClass().getResourceAsStream("/eng/en-sent.bin");
 			} else {
 				modelIn = getClass().getResourceAsStream("/ger/de-sent.bin");
@@ -247,7 +247,7 @@ public class PDFExtractor {
 		POSTaggerME _posTagger = null;
 		try {
 			// Loading tokenizer model
-			if (this.getLang() == "en") {
+			if (this.getLang().equals("en")) {
 				modelIn = getClass().getResourceAsStream(
 						"/eng/en-pos-maxent.bin");
 			} else {
