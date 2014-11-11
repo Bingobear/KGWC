@@ -69,7 +69,7 @@ public class PDFExtractor {
 		pdfStripper = new PDFTextStripper();
 		pdDoc = new PDDocument(cosDoc);
 		pdfStripper.setStartPage(1);
-		pdfStripper.setEndPage(5);
+		pdfStripper.setEndPage(97);
 		String parsedText = pdfStripper.getText(pdDoc);
 		// System.out.println(parsedText);
 		return parsedText;
