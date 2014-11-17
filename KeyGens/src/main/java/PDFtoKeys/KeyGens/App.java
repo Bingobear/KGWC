@@ -7,6 +7,11 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.ArrayList;
 
+import PDFtoKeys.KeyGens.PDFExtractor;
+import PDFtoKeys.KeyGens.PDF;
+import PDFtoKeys.KeyGens.WordOcc;
+import PDFtoKeys.KeyGens.Words;
+
 import com.cybozu.labs.langdetect.LangDetectException;
 
 /**
@@ -14,69 +19,52 @@ import com.cybozu.labs.langdetect.LangDetectException;
  * 
  */
 public class App {
+	static boolean debug = true;
+
 	public App() {
 
 	}
 
 	public static void main(String[] args) {
 		// BasicConfigurator.configure();
-		Text2Image gen = new Text2Image();
-		gen.generateImage("INEC");
-		try {
-			parsePDFtoKey();
-		} catch (LangDetectException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		Text2Image image = new Text2Image();
+		image.generateImage("INEC");
+		if (!debug) {
+			try {
+				parsePDFtoKey();
+			} catch (LangDetectException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 	}
 
 	private static void parsePDFtoKey() throws LangDetectException, IOException {
-		PDFExtractor app = new PDFExtractor();
-		String parsedText = app.parsePdftoString();
+		PDFExtractor extractor = new PDFExtractor();
+		ArrayList<Words> words = extractor.parsePDFtoKey();
 
-		LangDetect lang = new LangDetect();
-		app.setLang(lang.detect(parsedText));
-		System.out.println(app.getLang());
-		// sentence detector -> tokenizer
-		ArrayList<String> tokenheaven = app.getToken(parsedText);
-		String[] tokenTest = new String[tokenheaven.size()];
-		for (int ii = 0; ii < tokenheaven.size(); ii++) {
-			tokenTest[ii] = tokenheaven.get(ii);
-		}
-		String[] tokens = app.generalToken(parsedText);
-		ArrayList<String> keywords = app.getKeywordsfromPDF(tokens);
-		String[] filter = app.posttags(tokenTest);
-		// ArrayList<Integer> keys = app.filterNounVerb(filter);
-		ArrayList<String> keys = app.filterNoun(filter, tokens);
-		ArrayList<Keyword> keyOcc = app.keyOcc(keys);
+		ArrayList<WordOcc> occ = extractor.keyOcc(words);
+		// createTextExport(occ);
+		createTextExport(occ);
 
-		System.out.println("normal:" + tokens.length + ", optimiertNouns:"
-				+ keys.size() + ", keywordsocc" + keyOcc.size());
-		// go go stemming
-		createTextExport(keyOcc);
-		if (keywords.isEmpty()) {
-
-			// empty - could not directly extract keywords
-		} else {
-			// use extracted keywords as ref. elements
-		}
-		// app.token();
+		PDF pdf = new PDF(occ, extractor.getLang());
 
 	}
 
-	private static void createTextExport(ArrayList<Keyword> keyOcc) {
+	private static void createTextExport(ArrayList<WordOcc> keyOcc) {
 		Writer writer = null;
 
 		try {
 			writer = new BufferedWriter(new OutputStreamWriter(
 					new FileOutputStream("test.txt"), "utf-8"));
 			for (int ii = 0; ii < keyOcc.size(); ii++) {
-				Keyword current = keyOcc.get(ii);
+				WordOcc current = keyOcc.get(ii);
 
-				writer.write(current.word + ";" + current.occ + ";");
+				writer.write(current.getWord().getWord() + ";"
+						+ current.getOcc() + ";");
 
 			}
 		} catch (IOException ex) {
