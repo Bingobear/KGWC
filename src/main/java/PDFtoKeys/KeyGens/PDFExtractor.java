@@ -7,9 +7,9 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
 
+import PDFtoKeys.KeyGens.WordOcc;
+import PDFtoKeys.KeyGens.Words;
 import opennlp.tools.namefind.NameFinderME;
 import opennlp.tools.namefind.TokenNameFinderModel;
 import opennlp.tools.postag.POSModel;
@@ -29,8 +29,11 @@ import org.apache.pdfbox.pdfparser.PDFParser;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.util.PDFTextStripper;
 
+import com.cybozu.labs.langdetect.LangDetectException;
+
 public class PDFExtractor {
 	// TODO: get Title via extracting names then creating offset to them via
+	// TODO:Change language to PDF object
 	// first words
 	/**
 	 * PDF Extractor
@@ -56,28 +59,19 @@ public class PDFExtractor {
 		return this.language;
 	}
 
-	public String parsePdftoString() throws IOException {
-		PDFTextStripper pdfStripper = null;
-		PDDocument pdDoc = null;
-		COSDocument cosDoc = null;
-		URL url = getClass().getResource("/text/test.pdf");
-		File file = new File(url.getPath());
+	public String parsePdftoString(PDFTextStripper pdfStripper,
+			PDDocument pdDoc, int start, int end) throws IOException {
 
-		PDFParser parser = new PDFParser(new FileInputStream(file));
-		parser.parse();
-		cosDoc = parser.getDocument();
-		pdfStripper = new PDFTextStripper();
-		pdDoc = new PDDocument(cosDoc);
-		pdfStripper.setStartPage(1);
-		pdfStripper.setEndPage(97);
+		pdfStripper.setStartPage(start);
+		pdfStripper.setEndPage(end);
 		String parsedText = pdfStripper.getText(pdDoc);
-		// System.out.println(parsedText);
+		System.out.println("pages: " + start + "-" + end + " parsed");
 		return parsedText;
 	}
 
 	public ArrayList<String> getKeywordsfromPDF(String[] text) {
 		ArrayList<String> keywords = new ArrayList<String>();
-		ArrayList<String> textPDF = new ArrayList(Arrays.asList(text));
+		ArrayList<String> textPDF = new ArrayList<String>(Arrays.asList(text));
 		if (textPDF.contains("Keywords")) {
 			int counter = textPDF.indexOf("Keywords");
 			counter++;
@@ -150,15 +144,19 @@ public class PDFExtractor {
 	 * 
 	 */
 
-	public void NameFinder(String[] sentences) throws InvalidFormatException, IOException {
-//TEST STUFF
-//		String[] sentences = {
-//				"If President John F. Kennedy, after visiting France in 1961 with his immensely popular wife,"
-//						+ " famously described himself as 'the man who had accompanied Jacqueline Kennedy to Paris,'"
-//						+ " Mr. Hollande has been most conspicuous on this state visit for traveling alone.",
-//				"Mr. Draghi spoke on the first day of an economic policy conference here organized by"
-//						+ " the E.C.B. as a sort of counterpart to the annual symposium held in Jackson"
-//						+ " Hole, Wyo., by the Federal Reserve Bank of Kansas City. " };
+	public void NameFinder(String[] sentences) throws InvalidFormatException,
+			IOException {
+		// TEST STUFF
+		// String[] sentences = {
+		// "If President John F. Kennedy, after visiting France in 1961 with his immensely popular wife,"
+		// +
+		// " famously described himself as 'the man who had accompanied Jacqueline Kennedy to Paris,'"
+		// +
+		// " Mr. Hollande has been most conspicuous on this state visit for traveling alone.",
+		// "Mr. Draghi spoke on the first day of an economic policy conference here organized by"
+		// +
+		// " the E.C.B. as a sort of counterpart to the annual symposium held in Jackson"
+		// + " Hole, Wyo., by the Federal Reserve Bank of Kansas City. " };
 
 		// Load the model file downloaded from OpenNLP
 		// http://opennlp.sourceforge.net/models-1.5/en-ner-person.bin
@@ -220,7 +218,7 @@ public class PDFExtractor {
 		return _sentenceDetector;
 	}
 
-	public ArrayList<String> getToken(String parsedText) {
+	public String[] getToken(String parsedText) {
 		SentenceDetector sentdetector = sentencedetect();
 		String[] sentence = sentdetector.sentDetect(parsedText);
 		ArrayList<String> tokensA = new ArrayList<String>();
@@ -230,7 +228,11 @@ public class PDFExtractor {
 				tokensA.add(tokenSen[jj]);
 			}
 		}
-		return tokensA;
+		String[] tokens = new String[tokensA.size()];
+		for (int ii = 0; ii < tokensA.size(); ii++) {
+			tokens[ii] = tokensA.get(ii);
+		}
+		return tokens;
 	}
 
 	public String[] posttags(String[] text) {
@@ -241,7 +243,6 @@ public class PDFExtractor {
 	}
 
 	private POSTaggerME createposttagger() {
-
 
 		InputStream modelIn = null;
 		POSTaggerME _posTagger = null;
@@ -274,6 +275,13 @@ public class PDFExtractor {
 
 	}
 
+	/**
+	 * TODO - change to index return
+	 * 
+	 * @param filter
+	 * @param tokens
+	 * @return
+	 */
 	public ArrayList<String> filterNounVerb(String[] filter, String[] tokens) {
 		ArrayList<Integer> result = new ArrayList<Integer>();
 		for (int ii = 0; ii < filter.length; ii++) {
@@ -305,26 +313,134 @@ public class PDFExtractor {
 		return words;
 	}
 
-	public ArrayList<Keyword> keyOcc(ArrayList<String> keys) {
-		ArrayList<String> keywords = new ArrayList<String>();
-		keywords = (ArrayList<String>) keys.clone();
+	@SuppressWarnings("unchecked")
+	public ArrayList<WordOcc> keyOcc(ArrayList<Words> words) {
+		ArrayList<Words> keywords = new ArrayList<Words>();
+		keywords = (ArrayList<Words>) words.clone();
 		int arraySize = keywords.size();
-		ArrayList<Keyword> result = new ArrayList<Keyword>();
+		ArrayList<WordOcc> result = new ArrayList<WordOcc>();
 		while (arraySize > 0) {
 			int count = 0;
-			String current = keywords.get(0);
-			int index = 0;
-			while (index >= 0) {
+			Words current = keywords.get(0);
+			for (int ii = 0; ii < keywords.size(); ii++) {
+				Words compare = keywords.get(ii);
 
-				index = keywords.indexOf(current);
-				if (index >= 0) {
+				// TODO:Question compare words or only stem with type
+				if ((compare.getWord().contains(current.getWord()))
+						&& (compare.getStem().equals(current.getStem()))
+						&& (compare.getType().equals(current.getType()))) {
+					keywords.remove(ii);
 					count++;
-					keywords.remove(index);
 					arraySize--;
 				}
 			}
-			result.add(new Keyword(count, current));
+			result.add(new WordOcc(current, count));
 		}
+		return result;
+	}
+
+	/**
+	 * Generate Word ArrayList
+	 * 
+	 * @param filter
+	 * @param tokens
+	 * @param modes
+	 *            : 0-Noun, 1-Noun&Verb, 2-Noun&Adjective
+	 * @return
+	 */
+	public ArrayList<Words> generateWords(String[] filter, String[] tokens,
+			int mode) {
+		// ArrayList<Integer> result = new ArrayList<Integer>();
+
+		ArrayList<Words> result = new ArrayList<Words>();
+		// for eng and german
+		Stemmer stem = new Stemmer();
+		String[] stemmedW = stem.stem(tokens, this.getLang());
+
+		if (mode == 0) {
+			for (int ii = 0; ii < filter.length; ii++) {
+				if ((filter[ii].contains("NN"))) {
+					Words word = new Words(tokens[ii], stemmedW[ii], filter[ii]);
+					result.add(word);
+				}
+			}
+		} else if (mode == 1) {
+			for (int ii = 0; ii < filter.length; ii++) {
+				if ((filter[ii].contains("NN")) || (filter[ii].contains("VB"))) {
+					Words word = new Words(tokens[ii], stemmedW[ii], filter[ii]);
+					result.add(word);
+				}
+			}
+		} else if (mode == 2) {
+			for (int ii = 0; ii < filter.length; ii++) {
+				if ((filter[ii].contains("NN")) || (filter[ii].contains("JJ"))) {
+					Words word = new Words(tokens[ii], stemmedW[ii], filter[ii]);
+					result.add(word);
+				}
+			}
+		}
+
+		return result;
+	}
+
+	/**
+	 * TODO: GET TITLE FROM FIRST SENTENCE - idea: use namefinder
+	 * 
+	 * @return
+	 * @throws LangDetectException
+	 * @throws IOException
+	 */
+	public ArrayList<Words> parsePDFtoKey() throws LangDetectException,
+			IOException {
+		ArrayList<Words> result = new ArrayList<Words>();
+
+		PDFTextStripper pdfStripper = null;
+		PDDocument pdDoc = null;
+		COSDocument cosDoc = null;
+		// TODO:Move to input
+		// antrag big, test small
+		URL url = getClass().getResource("/text/test.pdf");
+		File file = new File(url.getPath());
+
+		PDFParser parser = new PDFParser(new FileInputStream(file));
+		parser.parse();
+		cosDoc = parser.getDocument();
+		pdfStripper = new PDFTextStripper();
+
+		pdDoc = new PDDocument(cosDoc);
+
+		LangDetect lang = new LangDetect();
+
+		for (int counter = 0; counter < pdDoc.getNumberOfPages(); counter += 5) {
+			String parsedText = parsePdftoString(pdfStripper, pdDoc, counter,
+					counter + 4);
+//			int test = pdDoc.getNumberOfPages();
+			// Language detection
+			if (counter == 0) {
+				setLang(lang.detect(parsedText));
+				System.out.println(getLang());
+			}
+			// sentence detector -> tokenizer
+			String[] tokens = getToken(parsedText);
+			String[] filter = posttags(tokens);
+
+			// TODO:MOVE KEYWORDS TO PDF OBJECT
+			ArrayList<String> keywords = getKeywordsfromPDF(tokens);
+
+			if (keywords.isEmpty()) {
+
+				// empty - could not directly extract keywords
+			} else {
+				// use extracted keywords as ref. elements
+			}
+
+			ArrayList<Words> words = generateWords(filter, tokens, 0);
+			result.addAll(words);
+			System.out.println("normal:" + tokens.length + ", optimiertNouns:"
+					+ words.size());
+			System.out.println("");
+		}
+		System.out.println("FINAL RESULT:optimiertNouns:" + result.size());
 		return result;
 	}
 

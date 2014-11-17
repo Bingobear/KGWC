@@ -1,16 +1,26 @@
 package PDFtoKeys.KeyGens;
 
 public class Keyword {
-	int occ = 0;
-	String word;
-
-	Keyword() {
+	private int score;
+	private String word;
+	
+	public Keyword() {
 
 	}
+	
+	public int getScore() {
+		return score;
+	}
 
-	Keyword(int count, String word) {
-		this.occ = count;
+	public void setScore(int score) {
+		this.score = score;
+	}
+
+	public String getWord() {
+		return word;
+	}
+
+	public void setWord(String word) {
 		this.word = word;
-	}
-
+	}	
 }
