@@ -1,10 +1,12 @@
 package PDFtoKeys.KeyGens;
 
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.net.URL;
 import java.util.ArrayList;
 
 import PDFtoKeys.KeyGens.PDFExtractor;
@@ -19,19 +21,22 @@ import com.cybozu.labs.langdetect.LangDetectException;
  * 
  */
 public class App {
-	static boolean debug = true;
-
+	static boolean debug = false;
+	static String title = "";
 	public App() {
 
 	}
 
 	public static void main(String[] args) {
 		// BasicConfigurator.configure();
-		Text2Image image = new Text2Image();
-		image.generateImage("INEC");
+		App app = new App();
+//		Text2Image image = new Text2Image();
+//		image.generateImage("INEC");
 		if (!debug) {
+
+
 			try {
-				parsePDFtoKey();
+				app.parsePDFtoKey();
 			} catch (LangDetectException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -40,26 +45,57 @@ public class App {
 				e.printStackTrace();
 			}
 		}
+
 	}
 
-	private static void parsePDFtoKey() throws LangDetectException, IOException {
+	public void parsePDFtoKey() throws LangDetectException, IOException {
 		PDFExtractor extractor = new PDFExtractor();
-		ArrayList<Words> words = extractor.parsePDFtoKey();
+		File hack = new File(".");
+		String home =hack.getAbsolutePath();
+		String img= home+"/export/gen_img/";
+		String key=home+"/export/gen_key/";
+		String export=home+"/export/gen_svg/";
+		URL url = getClass().getResource("/data/pdf/");
+		File folder = new File(url.getPath());
+		for (final File fileEntry : folder.listFiles()) {
+		        if (fileEntry.isFile()) {
+		        	
+		          title = fileEntry.getName();
+		          int pos = title.lastIndexOf(".");
+		          if (pos >= 0) {
+		              title = title.substring(0, pos);
+		          }
+		  		Text2Image image = new Text2Image();
+				image.generateImage(title,img);
+		          
+		  		ArrayList<Words> words = extractor.parsePDFtoKey(fileEntry);
 
-		ArrayList<WordOcc> occ = extractor.keyOcc(words);
-		// createTextExport(occ);
-		createTextExport(occ);
+				ArrayList<WordOcc> occ = extractor.keyOcc(words);
+				// createTextExport(occ);
+				createTextExport(occ,key,title);
+		          if ((title.substring(title.lastIndexOf('.') + 1, title.length()).toLowerCase()).equals("txt"))
+		            System.out.println("File= " + folder.getAbsolutePath()+ "\\" + fileEntry.getName());
+		  		WordCramGen wcg = new WordCramGen();
+				URL urlImg = getClass().getResource("/data/gen_img/"+title+".gif");
+				wcg.generate(urlImg,export,title);
+		      }
+		    }
+//		ArrayList<Words> words = extractor.parsePDFtoKey();
+//
+//		ArrayList<WordOcc> occ = extractor.keyOcc(words);
+//		// createTextExport(occ);
+//		createTextExport(occ);
 
-		PDF pdf = new PDF(occ, extractor.getLang());
+//		PDF pdf = new PDF(occ, extractor.getLang());
 
 	}
 
-	private static void createTextExport(ArrayList<WordOcc> keyOcc) {
+	private static void createTextExport(ArrayList<WordOcc> keyOcc, String path, String title) {
 		Writer writer = null;
 
 		try {
 			writer = new BufferedWriter(new OutputStreamWriter(
-					new FileOutputStream("test.txt"), "utf-8"));
+					new FileOutputStream(path+title+".txt"), "utf-8"));
 			for (int ii = 0; ii < keyOcc.size(); ii++) {
 				WordOcc current = keyOcc.get(ii);
 

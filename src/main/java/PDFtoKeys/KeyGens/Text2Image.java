@@ -8,11 +8,13 @@ import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
+
 import javax.imageio.ImageIO;
 
 public class Text2Image {
 
-	public void generateImage(String text) {
+	public void generateImage(String text, String path) {
 
 
 		/*
@@ -53,7 +55,7 @@ public class Text2Image {
 		g2d.drawString(text, 0, fm.getAscent());
 		g2d.dispose();
 		try {
-			ImageIO.write(img, "gif", new File("Text.gif"));
+			ImageIO.write(img, "gif", new File(path+text+".gif"));
 		} catch (IOException ex) {
 			ex.printStackTrace();
 		}

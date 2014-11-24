@@ -42,6 +42,7 @@ public class PDFExtractor {
 	 */
 
 	private String language;
+	private String title;
 
 	PDFExtractor() {
 
@@ -385,24 +386,27 @@ public class PDFExtractor {
 
 	/**
 	 * TODO: GET TITLE FROM FIRST SENTENCE - idea: use namefinder
+	 * @param fileEntry 
+	 * @param url2 
 	 * 
 	 * @return
 	 * @throws LangDetectException
 	 * @throws IOException
 	 */
-	public ArrayList<Words> parsePDFtoKey() throws LangDetectException,
+	public ArrayList<Words> parsePDFtoKey(File fileEntry) throws LangDetectException,
 			IOException {
 		ArrayList<Words> result = new ArrayList<Words>();
 
 		PDFTextStripper pdfStripper = null;
 		PDDocument pdDoc = null;
 		COSDocument cosDoc = null;
+		title = fileEntry.getName();
 		// TODO:Move to input
 		// antrag big, test small
-		URL url = getClass().getResource("/text/test.pdf");
-		File file = new File(url.getPath());
+//		URL url = getClass().getResource("/text/test.pdf");
+//		File file = new File(url.getPath());
 
-		PDFParser parser = new PDFParser(new FileInputStream(file));
+		PDFParser parser = new PDFParser(new FileInputStream(fileEntry));
 		parser.parse();
 		cosDoc = parser.getDocument();
 		pdfStripper = new PDFTextStripper();
@@ -414,8 +418,7 @@ public class PDFExtractor {
 		for (int counter = 0; counter < pdDoc.getNumberOfPages(); counter += 5) {
 			String parsedText = parsePdftoString(pdfStripper, pdDoc, counter,
 					counter + 4);
-//			int test = pdDoc.getNumberOfPages();
-			// Language detection
+
 			if (counter == 0) {
 				setLang(lang.detect(parsedText));
 				System.out.println(getLang());
