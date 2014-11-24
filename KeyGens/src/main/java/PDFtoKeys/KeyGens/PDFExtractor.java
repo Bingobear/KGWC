@@ -232,6 +232,9 @@ public class PDFExtractor {
 		String[] tokens = new String[tokensA.size()];
 		for (int ii = 0; ii < tokensA.size(); ii++) {
 			tokens[ii] = tokensA.get(ii);
+
+			// Extracts Punctuation chunks TODO
+			tokens[ii] = tokens[ii].replaceAll("\\W", "");
 		}
 		return tokens;
 	}
@@ -327,13 +330,22 @@ public class PDFExtractor {
 				Words compare = keywords.get(ii);
 
 				// TODO:Question compare words or only stem with type
-				if ((compare.getWord().contains(current.getWord()))
-						&& (compare.getStem().equals(current.getStem()))
-						&& (compare.getType().equals(current.getType()))) {
+				// Lower Border
+				if (((compare.getStem().equals(current.getStem())) && (compare
+						.getType().equals(current.getType())))
+						|| (compare.getWord().equals(current.getWord()))) {
 					keywords.remove(ii);
 					count++;
 					arraySize--;
 				}
+				// UPPER BORDER
+				// if ((compare.getWord().contains(current.getWord()))
+				// && (compare.getStem().equals(current.getStem()))
+				// && (compare.getType().equals(current.getType()))) {
+				// keywords.remove(ii);
+				// count++;
+				// arraySize--;
+				// }
 			}
 			result.add(new WordOcc(current, count));
 		}
@@ -361,6 +373,7 @@ public class PDFExtractor {
 		if (mode == 0) {
 			for (int ii = 0; ii < filter.length; ii++) {
 				if ((filter[ii].contains("NN"))) {
+					// remove punctuation
 					Words word = new Words(tokens[ii], stemmedW[ii], filter[ii]);
 					result.add(word);
 				}
@@ -386,15 +399,17 @@ public class PDFExtractor {
 
 	/**
 	 * TODO: GET TITLE FROM FIRST SENTENCE - idea: use namefinder
-	 * @param fileEntry 
-	 * @param url2 
+	 * 
+	 * @param fileEntry
+	 * @param first
+	 * @param url2
 	 * 
 	 * @return
 	 * @throws LangDetectException
 	 * @throws IOException
 	 */
-	public ArrayList<Words> parsePDFtoKey(File fileEntry) throws LangDetectException,
-			IOException {
+	public ArrayList<Words> parsePDFtoKey(File fileEntry, boolean first)
+			throws LangDetectException, IOException {
 		ArrayList<Words> result = new ArrayList<Words>();
 
 		PDFTextStripper pdfStripper = null;
@@ -403,8 +418,8 @@ public class PDFExtractor {
 		title = fileEntry.getName();
 		// TODO:Move to input
 		// antrag big, test small
-//		URL url = getClass().getResource("/text/test.pdf");
-//		File file = new File(url.getPath());
+		// URL url = getClass().getResource("/text/test.pdf");
+		// File file = new File(url.getPath());
 
 		PDFParser parser = new PDFParser(new FileInputStream(fileEntry));
 		parser.parse();
@@ -419,7 +434,7 @@ public class PDFExtractor {
 			String parsedText = parsePdftoString(pdfStripper, pdDoc, counter,
 					counter + 4);
 
-			if (counter == 0) {
+			if (first) {
 				setLang(lang.detect(parsedText));
 				System.out.println(getLang());
 			}

@@ -23,17 +23,17 @@ import com.cybozu.labs.langdetect.LangDetectException;
 public class App {
 	static boolean debug = false;
 	static String title = "";
+
 	public App() {
 
 	}
-
+//TODO all lower CASE!!! IMPORTANT
 	public static void main(String[] args) {
 		// BasicConfigurator.configure();
 		App app = new App();
-//		Text2Image image = new Text2Image();
-//		image.generateImage("INEC");
+		// Text2Image image = new Text2Image();
+		// image.generateImage("INEC");
 		if (!debug) {
-
 
 			try {
 				app.parsePDFtoKey();
@@ -51,51 +51,61 @@ public class App {
 	public void parsePDFtoKey() throws LangDetectException, IOException {
 		PDFExtractor extractor = new PDFExtractor();
 		File hack = new File(".");
-		String home =hack.getAbsolutePath();
-		String img= home+"/export/gen_img/";
-		String key=home+"/export/gen_key/";
-		String export=home+"/export/gen_svg/";
+		String home = hack.getAbsolutePath();
+		String img = home + "/export/gen_img/";
+		String key = home + "/export/gen_key/";
+		String export = home + "/export/gen_svg/";
 		URL url = getClass().getResource("/data/pdf/");
 		File folder = new File(url.getPath());
+		boolean first = true;
 		for (final File fileEntry : folder.listFiles()) {
-		        if (fileEntry.isFile()) {
-		        	
-		          title = fileEntry.getName();
-		          int pos = title.lastIndexOf(".");
-		          if (pos >= 0) {
-		              title = title.substring(0, pos);
-		          }
-		  		Text2Image image = new Text2Image();
-				image.generateImage(title,img);
-		          
-		  		ArrayList<Words> words = extractor.parsePDFtoKey(fileEntry);
+			if (fileEntry.isFile()) {
 
+				System.out.println("File= " + folder.getAbsolutePath() + "\\"
+						+ fileEntry.getName());
+				title = fileEntry.getName();
+				int pos = title.lastIndexOf(".");
+				if (pos >= 0) {
+					title = title.substring(0, pos);
+				}
+				Text2Image image = new Text2Image();
+				image.generateImage(title, img);
+
+				ArrayList<Words> words = extractor.parsePDFtoKey(fileEntry,
+						first);
+				if (first) {
+					first = false;
+				}
 				ArrayList<WordOcc> occ = extractor.keyOcc(words);
 				// createTextExport(occ);
-				createTextExport(occ,key,title);
-		          if ((title.substring(title.lastIndexOf('.') + 1, title.length()).toLowerCase()).equals("txt"))
-		            System.out.println("File= " + folder.getAbsolutePath()+ "\\" + fileEntry.getName());
-		  		WordCramGen wcg = new WordCramGen();
-				URL urlImg = getClass().getResource("/data/gen_img/"+title+".gif");
-				wcg.generate(urlImg,export,title);
-		      }
-		    }
-//		ArrayList<Words> words = extractor.parsePDFtoKey();
-//
-//		ArrayList<WordOcc> occ = extractor.keyOcc(words);
-//		// createTextExport(occ);
-//		createTextExport(occ);
+				createTextExport(occ, key, title);
+				if ((title
+						.substring(title.lastIndexOf('.') + 1, title.length())
+						.toLowerCase()).equals("txt"))
+					System.out.println("File= " + folder.getAbsolutePath()
+							+ "\\" + fileEntry.getName());
+				WordCramGen wcg = new WordCramGen();
 
-//		PDF pdf = new PDF(occ, extractor.getLang());
+				wcg.generate(home + "/export/", export, title);
+			}
+		}
+		// ArrayList<Words> words = extractor.parsePDFtoKey();
+		//
+		// ArrayList<WordOcc> occ = extractor.keyOcc(words);
+		// // createTextExport(occ);
+		// createTextExport(occ);
+
+		// PDF pdf = new PDF(occ, extractor.getLang());
 
 	}
 
-	private static void createTextExport(ArrayList<WordOcc> keyOcc, String path, String title) {
+	private static void createTextExport(ArrayList<WordOcc> keyOcc,
+			String path, String title) {
 		Writer writer = null;
 
 		try {
 			writer = new BufferedWriter(new OutputStreamWriter(
-					new FileOutputStream(path+title+".txt"), "utf-8"));
+					new FileOutputStream(path + title + ".txt"), "utf-8"));
 			for (int ii = 0; ii < keyOcc.size(); ii++) {
 				WordOcc current = keyOcc.get(ii);
 
