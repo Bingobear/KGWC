@@ -30,10 +30,10 @@ public class WordCramGen extends PApplet {
 	//
 	// }
 
-	public void setup(URL url2) {
+	public void setup(String img, String title) {
 		// IMAGE - Be careful size has to be at least as big as underlying image
-		URL url = getClass().getResource("/IMG/Text.gif");
-		PImage image = loadImage(url.toString());
+//		URL url = getClass().getResource("/IMG/Text.gif");
+		PImage image = loadImage(img+"gen_img/"+title+".gif");
 		Shape imageShape = new ImageShaper().shape(image, Color.BLACK.getRGB());
 		ShapeBasedPlacer placer = new ShapeBasedPlacer(imageShape);
 		// size(1024, 860);
@@ -43,8 +43,8 @@ public class WordCramGen extends PApplet {
 		// background(255);
 
 		// This code will print all the lines from the source text file.
-		url = getClass().getResource("/IMG/test1.txt");
-		String[] lines = loadStrings(url.toString());
+//		url = getClass().getResource("/IMG/test1.txt");
+		String[] lines = loadStrings(img+"gen_key/"+title+".txt");
 		String[] data = split(lines[0], ';');
 		/*
 		 * println("there are " + lines.length +data.length+ " lines");
@@ -103,8 +103,8 @@ public class WordCramGen extends PApplet {
 
 	}
 
-	public void generate(URL url, String export, String title) {
-		setup(url);
+	public void generate(String img, String export, String title) {
+		setup(img,title);
 		save(export,title);
 		System.out.println("Tot ziens!");
 
