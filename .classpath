@@ -22,7 +22,11 @@
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="/MasterKeyGen/libs/langdetect.jar"/>
 	<classpathentry kind="lib" path="libs/libstemmer_snowball.jar"/>
+	<classpathentry kind="lib" path="libs/langdetect.jar"/>
+	<classpathentry kind="lib" path="libs/wordcram/core.jar"/>
+	<classpathentry kind="lib" path="libs/wordcram/cue.language.jar"/>
+	<classpathentry kind="lib" path="libs/wordcram/jsoup-1.7.2.jar"/>
+	<classpathentry kind="lib" path="libs/wordcram/WordCram.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>
