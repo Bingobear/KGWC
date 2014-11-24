@@ -8,8 +8,9 @@ import java.net.URL;
 
 /**
  * WordCram Processing works, however very slow
+ * 
  * @author sbruns
- *
+ * 
  */
 public class WordCramGen extends PApplet {
 
@@ -18,26 +19,28 @@ public class WordCramGen extends PApplet {
 	 */
 	private static final long serialVersionUID = 2562164413223015554L;
 	WordCram wordcram;
+	int width;
+	int height;
 
-	/**
-	 * @param args
-	 */
-	public static void main(String[] args) {
-		// TODO Auto-generated method stub
+	// /**
+	// * @param args
+	// */
+	// public static void main(String[] args) {
+	// // TODO Auto-generated method stub
+	//
+	// }
 
-	}
-
-	public void setup() {
-
+	public void setup(URL url2) {
 		// IMAGE - Be careful size has to be at least as big as underlying image
 		URL url = getClass().getResource("/IMG/Text.gif");
-		int test = 0;
 		PImage image = loadImage(url.toString());
 		Shape imageShape = new ImageShaper().shape(image, Color.BLACK.getRGB());
 		ShapeBasedPlacer placer = new ShapeBasedPlacer(imageShape);
 		// size(1024, 860);
-		size(image.width, image.height);
-		background(255);
+		width = image.width;
+		height = image.height;
+		// size(width,height);
+		// background(255);
 
 		// This code will print all the lines from the source text file.
 		url = getClass().getResource("/IMG/test1.txt");
@@ -75,6 +78,14 @@ public class WordCramGen extends PApplet {
 				.angledAt(0);
 	}
 
+	public void save(String export, String title) {
+		try {
+			wordcram.toSvg(export+title+".svg", width, height).drawAll();
+		} catch (java.io.FileNotFoundException x) {
+			println(x);
+		}
+	}
+
 	public void draw() {
 		/*
 		 * SAVE AS SVG try { new WordCram(this) .toSvg("text.svg", width,
@@ -84,12 +95,18 @@ public class WordCramGen extends PApplet {
 
 		// Now we've created our WordCram, we can draw it:
 		wordcram.drawAll();
-		int test=0;
 		// fill tagcloud word by word
 		/*
 		 * if (wordcram.hasMore()) { wordcram.drawNext(); } else {
 		 * println("done"); noLoop(); }
 		 */
+
+	}
+
+	public void generate(URL url, String export, String title) {
+		setup(url);
+		save(export,title);
+		System.out.println("Tot ziens!");
 
 	}
 }
