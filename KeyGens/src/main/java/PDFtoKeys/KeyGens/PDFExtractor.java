@@ -226,15 +226,19 @@ public class PDFExtractor {
 		for (int ii = 0; ii < sentence.length; ii++) {
 			String[] tokenSen = generalToken(sentence[ii]);
 			for (int jj = 0; jj < tokenSen.length; jj++) {
-				tokensA.add(tokenSen[jj]);
+				// Extracts Punctuation chunks TODO
+				if (!tokenSen[jj].replaceAll("\\W", "").isEmpty()) {
+					//tokenSen[jj]
+					//TODO optimization with no funny letters
+					tokensA.add(tokenSen[jj].replaceAll("\\W", ""));
+				}
+
 			}
 		}
 		String[] tokens = new String[tokensA.size()];
 		for (int ii = 0; ii < tokensA.size(); ii++) {
 			tokens[ii] = tokensA.get(ii);
 
-			// Extracts Punctuation chunks TODO
-			tokens[ii] = tokens[ii].replaceAll("\\W", "");
 		}
 		return tokens;
 	}
@@ -323,21 +327,36 @@ public class PDFExtractor {
 		keywords = (ArrayList<Words>) words.clone();
 		int arraySize = keywords.size();
 		ArrayList<WordOcc> result = new ArrayList<WordOcc>();
+		int counter=0;
+		int size=0;
 		while (arraySize > 0) {
 			int count = 0;
 			Words current = keywords.get(0);
+			String test;
+			if(current.getWord().contains("projects")){
+				test="what";
+			}
+
 			for (int ii = 0; ii < keywords.size(); ii++) {
 				Words compare = keywords.get(ii);
+				if(count==22){
+					test="stop";
+
+				}
 
 				// TODO:Question compare words or only stem with type
 				// Lower Border
-				if (((compare.getStem().equals(current.getStem())) && (compare
-						.getType().equals(current.getType())))
-						|| (compare.getWord().equals(current.getWord()))) {
-					keywords.remove(ii);
-					count++;
-					arraySize--;
+				//IMPROVED FILTER ALGO
+				if (((compare.getStem().equals(current.getStem())) && ((compare
+						.getType().contains(current.getType())||(current
+						.getType().contains(compare.getType()))))
+						|| (compare.getWord().equals(current.getWord())))) {
+						keywords.remove(ii);
+						count++;
+						arraySize--;
 				}
+				counter=ii;
+				size=keywords.size();
 				// UPPER BORDER
 				// if ((compare.getWord().contains(current.getWord()))
 				// && (compare.getStem().equals(current.getStem()))
@@ -346,6 +365,9 @@ public class PDFExtractor {
 				// count++;
 				// arraySize--;
 				// }
+			}
+			if(current.getWord().equals("projects")){
+				test="here";
 			}
 			result.add(new WordOcc(current, count));
 		}
