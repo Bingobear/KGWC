@@ -102,16 +102,19 @@ public class App {
 	private static void createTextExport(ArrayList<WordOcc> keyOcc,
 			String path, String title) {
 		Writer writer = null;
-
+		
+		//here create the stopList
+		ArrayList<String> stopList =new ArrayList<String>();
+		stopList.add("ggf");
 		try {
 			writer = new BufferedWriter(new OutputStreamWriter(
 					new FileOutputStream(path + title + ".txt"), "utf-8"));
 			for (int ii = 0; ii < keyOcc.size(); ii++) {
 				WordOcc current = keyOcc.get(ii);
-
+				if(!stopList.contains(current.getWord())){
 				writer.write(current.getWord().getWord() + ";"
 						+ current.getOcc() + ";");
-
+				}
 			}
 		} catch (IOException ex) {
 			// report

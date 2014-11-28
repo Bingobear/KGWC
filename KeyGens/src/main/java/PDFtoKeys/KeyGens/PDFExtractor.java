@@ -349,8 +349,8 @@ public class PDFExtractor {
 				//IMPROVED FILTER ALGO
 				if (((compare.getStem().equals(current.getStem())) && ((compare
 						.getType().contains(current.getType())||(current
-						.getType().contains(compare.getType()))))
-						|| (compare.getWord().equals(current.getWord())))) {
+						.getType().contains(compare.getType())))))
+						|| (compare.getWord().equals(current.getWord()))) {
 						keywords.remove(ii);
 						count++;
 						arraySize--;
@@ -456,10 +456,14 @@ public class PDFExtractor {
 			String parsedText = parsePdftoString(pdfStripper, pdDoc, counter,
 					counter + 4);
 
-			if (first) {
-				setLang(lang.detect(parsedText));
+			//abfangen first time init detector
+			if(counter==0){
+				setLang(lang.detect(parsedText,first));
 				System.out.println(getLang());
 			}
+			//lowercase all tokens
+			parsedText=parsedText.toLowerCase();
+			
 			// sentence detector -> tokenizer
 			String[] tokens = getToken(parsedText);
 			String[] filter = posttags(tokens);
