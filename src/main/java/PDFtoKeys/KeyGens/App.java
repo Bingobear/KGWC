@@ -103,6 +103,9 @@ public class App {
 			String path, String title) {
 		Writer writer = null;
 		
+		//Use external txt file
+		//File stopList = getClass().getResourceAsStream("/stopList/stopList.txt");
+		
 		//here create the stopList
 		ArrayList<String> stopList =new ArrayList<String>();
 		stopList.add("ggf");

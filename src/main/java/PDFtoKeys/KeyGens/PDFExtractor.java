@@ -228,9 +228,9 @@ public class PDFExtractor {
 			for (int jj = 0; jj < tokenSen.length; jj++) {
 				// Extracts Punctuation chunks TODO
 				if (!tokenSen[jj].replaceAll("\\W", "").isEmpty()) {
-					//tokenSen[jj]
-					//TODO optimization with no funny letters
-					tokensA.add(tokenSen[jj].replaceAll("\\W", ""));
+					// tokenSen[jj].replaceAll("\\W", "")
+					// TODO optimization with no funny letters
+					tokensA.add(tokenSen[jj]);
 				}
 
 			}
@@ -327,36 +327,36 @@ public class PDFExtractor {
 		keywords = (ArrayList<Words>) words.clone();
 		int arraySize = keywords.size();
 		ArrayList<WordOcc> result = new ArrayList<WordOcc>();
-		int counter=0;
-		int size=0;
+		int counter = 0;
+		int size = 0;
 		while (arraySize > 0) {
 			int count = 0;
 			Words current = keywords.get(0);
 			String test;
-			if(current.getWord().contains("projects")){
-				test="what";
+			if (current.getWord().contains("projects")) {
+				test = "what";
 			}
 
 			for (int ii = 0; ii < keywords.size(); ii++) {
 				Words compare = keywords.get(ii);
-				if(count==22){
-					test="stop";
+				if (count == 22) {
+					test = "stop";
 
 				}
 
 				// TODO:Question compare words or only stem with type
 				// Lower Border
-				//IMPROVED FILTER ALGO
+				// IMPROVED FILTER ALGO
 				if (((compare.getStem().equals(current.getStem())) && ((compare
-						.getType().contains(current.getType())||(current
+						.getType().contains(current.getType()) || (current
 						.getType().contains(compare.getType())))))
 						|| (compare.getWord().equals(current.getWord()))) {
-						keywords.remove(ii);
-						count++;
-						arraySize--;
+					keywords.remove(ii);
+					count++;
+					arraySize--;
 				}
-				counter=ii;
-				size=keywords.size();
+				counter = ii;
+				size = keywords.size();
 				// UPPER BORDER
 				// if ((compare.getWord().contains(current.getWord()))
 				// && (compare.getStem().equals(current.getStem()))
@@ -366,8 +366,8 @@ public class PDFExtractor {
 				// arraySize--;
 				// }
 			}
-			if(current.getWord().equals("projects")){
-				test="here";
+			if (current.getWord().equals("projects")) {
+				test = "here";
 			}
 			result.add(new WordOcc(current, count));
 		}
@@ -396,8 +396,19 @@ public class PDFExtractor {
 			for (int ii = 0; ii < filter.length; ii++) {
 				if ((filter[ii].contains("NN"))) {
 					// remove punctuation
-					Words word = new Words(tokens[ii], stemmedW[ii], filter[ii]);
-					result.add(word);
+					// tokens[ii] TODO
+					if (!this.language.equals("de")) {
+						Words word = new Words(
+								tokens[ii].replaceAll("\\W", ""), stemmedW[ii],
+								filter[ii]);
+						result.add(word);
+					} else {
+						//MAYBE SOLVES PROBLEM?TODO
+						Words word = new Words(tokens[ii].replaceAll("[^\\p{L}\\p{Nd}]+", ""), stemmedW[ii],
+								filter[ii]);
+						result.add(word);
+					}
+
 				}
 			}
 		} else if (mode == 1) {
@@ -456,14 +467,14 @@ public class PDFExtractor {
 			String parsedText = parsePdftoString(pdfStripper, pdDoc, counter,
 					counter + 4);
 
-			//abfangen first time init detector
-			if(counter==0){
-				setLang(lang.detect(parsedText,first));
+			// abfangen first time init detector
+			if (counter == 0) {
+				setLang(lang.detect(parsedText, first));
 				System.out.println(getLang());
 			}
-			//lowercase all tokens
-			parsedText=parsedText.toLowerCase();
-			
+			// lowercase all tokens
+			parsedText = parsedText.toLowerCase();
+
 			// sentence detector -> tokenizer
 			String[] tokens = getToken(parsedText);
 			String[] filter = posttags(tokens);
